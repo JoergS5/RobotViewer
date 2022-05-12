@@ -4,7 +4,7 @@
   "author": "JoergS5",
   "version": "3.4.0.1",
   "license": "GPL-3.0-or-later",
-  "homepage": "https://github.com/JoergS5/RoboterViewer",
+  "homepage": "https://github.com/JoergS5/RobotViewer",
   "dwcVersion": "3.4",
   "dependencies": {
     "@babylonjs/core": "^4.2.0",
