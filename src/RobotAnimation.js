@@ -15,9 +15,9 @@ export const animateRobot = () => {
   if(drawPoints) {
     var scene = scenes[0];
     var sph = MeshBuilder.CreateSphere("point", {diameter: 5}, scene);
-    sph.position.x = coord[7].x;
-    sph.position.y = coord[7].z;
-    sph.position.z = - coord[7].y;
+    sph.position.x = coord[numOfAxes + 1].x;
+    sph.position.y = coord[numOfAxes + 1].z;
+    sph.position.z = - coord[numOfAxes + 1].y;
     robotparts.push(sph);
   }
 }
