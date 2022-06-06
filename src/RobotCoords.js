@@ -1,100 +1,19 @@
 // draw coordinate system. Main axes and helper lines every 100 (default)
 
 import { Vector3, MeshBuilder } from "@babylonjs/core";
-import { coord, store, robotparts, scenes, materials } from './Store.js'
+import { coord, numOfAxes, store, robotparts, materials } from './RobotData.js'
 
-
-export const refreshGitter = () => {
-  if(store.showGitter) {
-    disposeGitter();
-    showGitter();
+export const showCoords = (scene) => {
+  for(let idx = 0; idx <= numOfAxes; idx++) {
+    makeCoord(idx, "coords"+idx, store.axisSize, scene);
   }
-}
-
-export const showGitter = () => {
-    store.showGitter = true;
-    var scene = scenes[0];
-    createGitter(scene);
-}
-
-export const disposeGitter = () => {
-    store.showGitter = false;
-    robotparts.forEach(function(m) {
-      if(m.name.startsWith("gitter")) {
-        m.dispose();
-      }
-    });
-}
-
-export const toggleGitter = () => {
-  if(store.showGitter) {
-    disposeGitter();
-  }
-  else {
-    disposeGitter();
-    showGitter();
-  }
-}
-
-export const refreshCoords = () => {
-  if(store.showCoords) {
-    disposeCoords();
-    showCoords();
-  }
-}
-
-
-export const showCoords = () => {
-    store.showCoords = true;
-    var scene = scenes[0];
-    createCoords(scene);
-}
-
-export const disposeCoords = () => {
-    store.showCoords = false;
-    robotparts.forEach(function(m) {
-      if(m.name.startsWith("coords")) {
-        m.dispose();
-      }
-    });
-}
-
-
-export const toggleCoords = () => {
-  if(store.showCoords) {
-    disposeCoords();
-  }
-  else {
-    disposeCoords();
-    showCoords();
-  }
-}
-
-
-export const createGitter = (scene) => {
-  for(let x=0; x <= 1000; x+=100) {
-    drawLine("gitter", x, 0, 0, x, 1000, 0, materials[5], 1, scene); // x axis 0
-  }
-  for(let y=0; y <= 1000; y+=100) {
-    drawLine("gitter", 0, y, 0, 1000, y, 0, materials[5], 1, scene); // x axis 0
-  }
-  for(let y=0; y <= 1000; y+=100) {
-    drawLine("gitter", 0, y, 0, 0, y, 1000, materials[5], 1, scene); // x axis 0
-  }
-  for(let z=0; z <= 1000; z+=100) {
-    drawLine("gitter", 0, 0, z, 0, 1000, z, materials[5], 1, scene); // x axis 0
-  }
-};
-
-
-export const createCoords = (scene) => {
-  makeCoord(0, "coords0", store.axisSize, scene);
+/*  makeCoord(0, "coords0", store.axisSize, scene);
   makeCoord(1, "coords1", store.axisSize, scene);
   makeCoord(2, "coords2", store.axisSize, scene);
   makeCoord(3, "coords3", store.axisSize, scene);
   makeCoord(4, "coords4", store.axisSize, scene);
   makeCoord(5, "coords5", store.axisSize, scene);
-  makeCoord(6, "coords6", store.axisSize, scene);
+  makeCoord(6, "coords6", store.axisSize, scene);*/
 }
 
 

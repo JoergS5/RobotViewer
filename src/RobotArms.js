@@ -1,59 +1,92 @@
 // draw robot body
 // orange robot body, solid or mesh
 
-import { coord, store, robotparts, scenes, materials, getDHType, angle } from './Store.js'
-import { Vector3, MeshBuilder, Mesh } from "@babylonjs/core";
+import { Vector3, MeshBuilder, TransformNode, Axis, Space } from "@babylonjs/core";
+import { coord, robotparts, materials, getDHType, angle,
+	getEulerAnglesZYZ, dh, tool, numOfAxes, scenes } from './RobotData.js'
 
-export const createRobotBody = (scene) => {
+
+export const showArms = (scene) => {
   drawBase(scene);
-  for(let k=1; k < 8; k++) {
-    drawRobotArm(k, materials[3], scene);
+  for(let j=0; j < numOfAxes; j++) {
+    drawRobotArm(j, materials[3], scene);
   }
+  showTool(scene);
 }
 
-export const refreshArms = () => {
-  if(store.showArms) {
-    disposeArms();
-    showArms();
-  }
-}
-
-export const showArms = () => {
-    store.showArms = true;
-    var scene = scenes[0];
-    drawBase(scene);
-    for(let j=1; j < 8; j++) {
-      drawRobotArm(j, materials[3], scene);
+export const moveArms = () => {
+  robotparts.forEach(function(m) {
+    if(m.name.startsWith("arm")) {
+      m.dispose();
     }
-}
-export const disposeArms = () => {
-    store.showArms = false;
-    robotparts.forEach(function(m) {
-      if(m.name.startsWith("arm")) {
-        m.dispose();
-      }
-    });
+  });
+
+  var scene = scenes[0];
+  showArms(scene);
+
+//  scene.render();
 }
 
-export const toggleArms = () => {
-  if(store.showArms) {
-    disposeArms();
-  }
-  else {
-    disposeArms();
-    showArms();
-  }
-}
+
 
 
 const drawBase = (scene) => {
   var size = 200;
-  var cyl = Mesh.CreateBox("arm0", size, scene);
+  var cyl = MeshBuilder.CreateCylinder("arm0", {diameter: size, height:size}, scene);
   cyl.material = materials[3];
+  cyl.position.x = coord[0].x;
+  cyl.position.y = coord[0].z;
+  cyl.position.z = - coord[0].y;
   robotparts.push(cyl);
 }
 
-const drawRobotArm = (axisnr, material, scene) => {
+const showTool = (scene) => {
+  var CoT = new TransformNode("root");
+
+  var part1 = MeshBuilder.CreateBox("armTool", {height: tool.z, depth: 20, width: 20}, scene);
+  part1.parent = CoT;
+  part1.position.y = tool.z / 2;
+
+  var idx = numOfAxes;
+  var rotation = (dh[idx].theta / 360.0) *2.0*3.14159;
+  rotateAndTrans(idx, CoT, rotation);
+  robotparts.push(part1);
+}
+
+const rotateAndTrans = (i, cyl, rotation) => {
+  var euler = [0.0,0.0,0.0];
+//alert("xx xy xy: " + coord[i].xx + "/" + coord[i].xy + "/" + coord[i].xz);
+//alert("yx yy yy: " + coord[i].yx + "/" + coord[i].yy + "/" + coord[i].yz);
+//alert("zx zy zz: " + coord[i].zx + "/" + coord[i].zy + "/" + coord[i].zz);
+  // c13, c23, c31, c32, c33
+  getEulerAnglesZYZ(coord[i].zx, coord[i].zy, coord[i].xz, coord[i].yz, coord[i].zz, euler);
+  var byZ1 = euler[0];
+  var byY = euler[1];
+  var byZ2 = euler[2];
+//alert("byZ1: " + byZ1);
+//alert("by: " + byY);
+//alert("byZ2: " + byZ2);
+
+  cyl.rotate(Axis.Y, byZ1, Space.LOCAL);
+  cyl.rotate(Axis.Z, -byY, Space.LOCAL);
+  cyl.rotate(Axis.Y, byZ2 + rotation, Space.LOCAL);
+
+/*  cyl.position.x = coord[i].x;
+  cyl.position.y = coord[i].z;
+  cyl.position.z = -coord[i].y; */
+
+var x = coord[i].x;
+var y = coord[i].z;
+var z = - coord[i].y;
+cyl.position = new Vector3(x, y, z);
+cyl.position = cyl.position.add(cyl.position.subtract(cyl.getAbsolutePosition()));
+
+}
+
+
+const drawRobotArm = (idx, material, scene) => {
+  var axisnr = idx + 1;
+
   var fromX = 0;
   var fromY = 0;
   var fromZ = 0;
@@ -84,12 +117,12 @@ const drawRobotArm = (axisnr, material, scene) => {
 }
 
 const drawArm = (name, fromX, fromY, fromZ, toX, toY, toZ, material, scene) => {
-  var radius = 30;
+  var radius = 25;
   var path = [
         new Vector3(fromX, fromZ, -fromY),
         new Vector3(toX, toZ, -toY)
     ]
-  var tube = MeshBuilder.CreateTube(name, {path: path, radius: radius}, scene);
+  var tube = MeshBuilder.CreateTube(name, {path: path, radius: radius, updatable: true}, scene);
   tube.material = material;
   robotparts.push(tube);
   return tube;

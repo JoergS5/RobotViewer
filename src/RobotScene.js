@@ -1,87 +1,92 @@
-import { Engine, Scene, Vector3, Color3, HemisphericLight, StandardMaterial,
-	ArcRotateCamera, Tools, SceneOptimizer, SceneOptimizerOptions } from "@babylonjs/core";
-import { scenes, materials, materialColors, store } from './Store';
-import { createGitter, createCoords } from './RobotCoords'
-import { createRobotBody } from './RobotArms';
+import { Engine, Scene, Vector3, ArcRotateCamera, Tools, SceneOptimizerOptions, 
+	SceneOptimizer } from "@babylonjs/core";
+import { scenes, initMaterials, robotparts, numOfAxes } from './RobotData';
+import { showGitter } from './RobotGitter';
+import { showCoords } from './RobotCoords';
+import {showArms, moveArms } from './RobotArms';
 import { showAxes } from './RobotAxes';
+import { showRotaryPies } from './RobotRotaryPie';
+import { showPrismaticBars } from './RobotPrismaticBar';
 
-export const createScene = (canvas) => {
+import { getForward } from './ForwardCalculate';
 
-  const engine = new Engine(canvas);
 
-  const scene = new Scene(engine);
+export const showAll = () => {
+  var scene = scenes[0];
+  clearAll();
+
+  getForward();
+
+  showGitter(scene);
+  showCoords(scene);
+  showArms(scene);
+  showAxes(scene);
+  showRotaryPies(scene);
+  showPrismaticBars(scene);
+
+}
+
+const clearAll = () => {
+  robotparts.forEach(function(m) {
+    m.dispose();
+  });
+}
+
+export const initScene = (canvas0) => {
+
+  var engine = new Engine(canvas0);
+
+  var scene = new Scene(engine);
   scene.useRightHandedSystem = true;
   scenes.push(scene);
-  scene.clearColor = Color3.Gray();
+
+  let lookat = new Vector3(-500,1000,500);
+//  const camera = new ArcRotateCamera("camera1", Tools.ToRadians(90), 
+//	Tools.ToRadians(65), 100, lookat, scene);
+  const camera = new ArcRotateCamera("camera1", Tools.ToRadians(0), 
+	Tools.ToRadians(0), 500, lookat, scene);
+//  camera.setTarget(Vector3.Zero());
+  camera.setTarget(new Vector3(500,0,-500));
+
   scene.createDefaultLight();
 
-  let lookat = new Vector3(1000,0,800);
-  const camera = new ArcRotateCamera("camera", Tools.ToRadians(90), 
-	Tools.ToRadians(65), 1500, lookat, scene);
-  camera.setTarget(Vector3.Zero());
-  camera.attachControl(canvas, true);
+  scene.detachControl();
+  engine.inputElement = canvas0;
+  scene.attachControl();
+  camera.attachControl(canvas0, true);
 
-  new HemisphericLight("light", Vector3.Up(), scene);
-  new HemisphericLight("HemiLight", new Vector3(1, 0, 0), scene);
+  initMaterials();
 
-  initMaterials(scene);
+var options = new SceneOptimizerOptions(1, 100);
+//options.addOptimization(new HardwareScalingOptimization(0, 1));
+options.targetFrameRate = 100;
+//SceneOptimizer.OptimizeAsync(scene, options);
+options = SceneOptimizerOptions.LowDegradationAllowed();
+//options = SceneOptimizerOptions.ModerateDegradationAllowed(45);
 
-  createGitter(scene);
-  createCoords(scene);
-  showAxes();
-  createRobotBody(scene);
-
-  SceneOptimizer.OptimizeAsync(scene);
-  SceneOptimizerOptions.LowDegradationAllowed();
+/*
+SceneOptimizer.OptimizeAsync(scene, options,
+            function() {
+//		 alert("optimizer success"); 
+		},
+            function() { 
+		alert("optimizer failure"); 
+		});
+*/
 
   engine.runRenderLoop(() => {
     scene.render();
   });
 
+
+
+
 };
 
-const initMaterials = (scene) => {
-  const material0 = new StandardMaterial("material0", scene);
-  material0.diffuseColor = materialColors[0];
-  materials.push(material0);
-
-  const material1 = new StandardMaterial("material1", scene);
-  material1.diffuseColor = materialColors[1];
-  materials.push(material1);
-
-  const material2 = new StandardMaterial("material2", scene);
-  material2.diffuseColor = materialColors[2];
-  materials.push(material2);
-
-  const material3 = new StandardMaterial("material3", scene);
-  material3.alpha = 0.4;
-  material3.diffuseColor = materialColors[3];
-  materials.push(material3);
-
-  const material4 = new StandardMaterial("material4", scene);
-  material4.alpha = 0.7;
-  material4.diffuseColor = materialColors[4];
-  materials.push(material4);
-
-  const material5 = new StandardMaterial("material5", scene);
-  material5.diffuseColor = materialColors[5];
-  materials.push(material5);
-
-}
-
-export const freeze = () => {
-  var scene = scenes[0];
-  if(scene != null) {
-    var engine = scene.getEngine();
-    if(store.updateFast) {
-      store.updateFast = false;
-      engine.stopRenderLoop();
-    }
-    else {
-      store.updateFast = true;
-      engine.runRenderLoop(() => {
-        scene.render();
-      });
-    }
-  }
+export const toggle = (elementStartingWith, visibility0) => {
+  robotparts.forEach(function(m) {
+      if(m.name.startsWith(elementStartingWith)) {
+        m.isVisible = visibility0;
+      }
+  });
 }

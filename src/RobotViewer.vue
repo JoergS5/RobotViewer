@@ -1,195 +1,232 @@
+<style>
+.button-container {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+}
+</style>
+
+
+
 <template>
-<div>
- <div>
-  <v-app>
+<div id="app">
+<v-app>
+<v-container class="button-container">
+<v-row>
+
+<v-col>
+<v-row>
+  <v-btn @click="allOff">Empty</v-btn>
+  <v-btn @click="toggleGitter0">Gitter</v-btn>
+  <v-btn @click="toggleCoords0">Coords</v-btn>
+  <v-btn @click="toggleAxes0">Axes</v-btn>
+  <v-btn @click="togglePieBar0">Pie,Bar</v-btn>
+  <v-btn @click="toggleArms0">Arms</v-btn>
+  <v-btn @click="allOn">All</v-btn>
+</v-row>
+<v-row>
+  <v-text-field v-model="anglesOneLiner" label="Angles" background-color="white"
+                    filled outlined/>
+  <v-combobox autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          v-model="selectAnimate" :items="itemsAnimate" label="Animate" outlined dense
+          background-color="white" filled></v-combobox>
+  <v-text-field v-model="heightWidthOneLiner" label="Height, Width" background-color="white"
+                    filled outlined/>
+</v-row>
+<v-row>
+  <v-textarea  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+            name="input-7-1" label="DH Parameters: d, theta, ytr, yrot, a, alpha, home, min, max" v-model="dhstring"
+                 auto-grow rows="5" cols="40" background-color="white" filled></v-textarea>
+</v-row>
+<v-row>
+  <v-btn @click.stop="showDesignForm=true">Design New
+             <DesignForm v-model="showDesignForm" /></v-btn>
+  <v-btn @click.stop="recalc0">Set & Refresh</v-btn>
+</v-row>
+<v-row>
+  <v-btn @click.stop="showLoadSaveForm=true">load robot.g
+             <LoadSaveForm v-model="showLoadSaveForm" /></v-btn>
+  <v-btn @click.stop="showLoadSaveForm=true">save robot.g
+             <LoadSaveForm v-model="showLoadSaveForm" /></v-btn>
+</v-row>
+<v-row>
+  <v-select  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          v-model="selectTemplate" :items="itemsTemplate"
+          label="Load Predefined Model" outlined background-color="white" filled></v-select>
+</v-row>
+
+</v-col>
+<v-col>
   <div>
     <canvas ref="bjsCanvas" :width="mainWidth" :height="mainHeight"/>
   </div>
-  <div>
-        <v-btn @click="freeze0">{{freezeText}}</v-btn>
+</v-col>
 
-        <v-btn @click="toggleGitter0">Gitter</v-btn>
-        <v-btn @click="toggleCoords0">Coords</v-btn>
-        <v-btn @click="toggleAxes0">Axes</v-btn>
-        <v-btn @click="toggleArms0">Arms</v-btn>
+</v-row>
+</v-container>
 
-        <v-btn @click="showAngles = !showAngles">Angles</v-btn>
-        <v-btn @click="showDH = !showDH">DH</v-btn>
-        <v-btn @click="showSizes = !showSizes">Gui</v-btn>
-
-	<br>
-	<br>
-
-        <v-form v-show="showAngles">
-          <v-container>
-            <v-row>
-                <v-text-field v-model="anglesOneLiner" label="Angles" class="shrink"/>
-                <v-btn @click="reset0('0,0,0,0,0,0')">reset Angles</v-btn>
-            </v-row>
-          </v-container>
-        </v-form>
-        <v-form v-show="showSizes">
-          <v-container>
-            <v-row>
-                <v-text-field v-model="mainWidth" label="Width" class="shrink"/>
-                <v-text-field v-model="mainHeight" label="Height" class="shrink"/>
-            </v-row>
-          </v-container>
-        </v-form>
-        <v-form v-show="showDH">
-          <v-container>
-            <v-row>
-              <v-btn @click="recalc">redraw after DH change</v-btn><br>
-            </v-row>
-            <v-row>
-                <v-text-field v-model="ARP" label="A[R|P*]" class="shrink"/>
-                <v-text-field v-model="A0" label="A0" class="shrink"/>
-            </v-row>
-            <v-row>
-                <v-text-field v-model="A1" label="A1"/>
-            </v-row>
-            <v-row>
-                <v-text-field v-model="A2" label="A2"/>
-            </v-row>
-            <v-row>
-                <v-text-field v-model="A3" label="A3"/>
-            </v-row>
-            <v-row>
-                <v-text-field v-model="A4" label="A4"/>
-            </v-row>
-            <v-row>
-                <v-text-field v-model="A5" label="A5"/>
-            </v-row>
-            <v-row>
-                <v-text-field v-model="A6" label="A6"/>
-            </v-row>
-            <v-row>
-                <v-text-field v-model="Tool" label="Tool" class="shrink"/>
-            </v-row>
-          </v-container>
-        </v-form>
-  </div>
-  </v-app>
-    </div>
+</v-app>
 </div>
 </template>
+
+
 
 <script>
 import Vue from 'vue';
 import Vuetify from 'vuetify';
 import 'vuetify/dist/vuetify.min.css';
-
 Vue.use(Vuetify)
+import LoadSaveForm from './LoadSaveForm.vue'
+import DesignForm from './DesignForm.vue'
 
-import { dhType, dh, dhString, toolString, angle, coord, store, setAngles,
-		set_A_Value } from './Store.js';
-import { getForward } from './ForwardCalculate.js';
-import { createScene, freeze } from "./RobotScene";
-import { toggleGitter, toggleCoords, refreshGitter, refreshCoords } from "./RobotCoords";
-import { toggleAxes, refreshAxes } from "./RobotAxes";
-import { toggleArms, refreshArms } from "./RobotArms";
+import { initScene, toggle, showAll } from "./RobotScene";
+
+import { setAngles, initAnglesOneLiner, scenes } from './RobotData';
+import { setDHParameters } from './DHString2ArrConverter';
+import { readTemplate } from './RobotTemplates';
+import { animateRobot, setAnimationMode, clearAnimationPoints } from './RobotAnimation';
 
 export default {
-//  name: "app",
-
+  name: "RobotViewer",
+  methods: {
+    recalc0: function() {
+      setDHParameters(this.dhstring);
+      showAll();
+    },
+    allOff : function() {
+alert("allOff");
+    },
+    allOn : function() {
+alert("allOn");
+    },
+    toggleGitter0 : function() {
+      this.visibleGitter = !this.visibleGitter;
+      toggle("gitter", this.visibleGitter);
+    },
+    toggleCoords0 : function() {
+      this.visibleCoords = !this.visibleCoords;
+      toggle("coords", this.visibleCoords);
+    },
+    toggleAxes0 : function() {
+      this.visibleAxes = !this.visibleAxes;
+      toggle("axis", this.visibleAxes);
+    },
+    togglePieBar0 : function() {
+      this.visiblePieBar = !this.visiblePieBar;
+      toggle("pie", this.visiblePieBar);
+      toggle("bar", this.visiblePieBar);
+    },
+    toggleArms0 : function() {
+      this.visibleArms = !this.visibleArms;
+      toggle("arm", this.visibleArms);
+    },
+    freeze0 : function() {
+      this.freeze = !this.freeze;
+      if(this.freeze == true) {
+        this.freezeText = "unfreeze";
+      }
+      else {
+        this.freezeText = "freeze";
+      }
+    }
+  },
   mounted() {
     const bjsCanvas = this.$refs.bjsCanvas;
     if (bjsCanvas) {
-      createScene(bjsCanvas);
+      initScene(bjsCanvas);
     }
   },
   data() {
     return{
-      store,
-      angle,
-      dh,
-      coord,
-      showAngles: true,
-      showDH: true,
-      showSizes: false,
       mainWidth: 800,
-      mainHeight: 400,
-      anglesOneLiner: angle,
+      mainHeight: 800,
+      fullscreen: false,
+      showLoadSaveForm: false,
+      showDesignForm: false,
+      drawer: false,
+      anglesOneLiner: "",
+      heightWidthOneLiner: "300, 300",
       freezeText: "freeze",
-      ARP: dhType,
-      A0: dhString(0, true),
-      A1: dhString(1, true),
-      A2: dhString(2, true),
-      A3: dhString(3, true),
-      A4: dhString(1, true),
-      A5: dhString(1, true),
-      A6: dhString(1, true),
-      Tool: toolString(true)
+      freeze: false,
+
+      //
+      visibleGitter:true,
+      visibleCoords:true,
+      visibleAxes:true,
+      visiblePieBar:true,
+      visibleArms:true,
+
+      // combobox:
+      selectTemplate: "",
+      itemsTemplate: [
+          'Robot 6 Axis RRRRRR',
+          'Cartesian 3 Axis PPP',
+          'Cartesian with Spherical wrist PPPRRR',
+          'Open5x PPPRR',
+          'Scara 2 arm RRP',
+          'Anthropomorphic RRR',
+          'Stanford manipulator RRPRRR',
+          '7 arm cobot RRRRRRR',
+          'empty',
+        ],
+      selectAnimate: ['no animation'],
+      itemsAnimate: [
+          'no animation',
+          'all axes',
+          'axis 1',
+          'axis 2',
+          'axis 3',
+          'axis 4',
+          'axis 5',
+          'axis 6',
+          'clear points',
+          'points on',
+          'points off'
+        ],
+      dhstring:"load predefined model, load robot.g, or design new",
+      id: "app"
     }
   },
-  methods: {
-    toggleGitter0 : function() {
-      toggleGitter();
-    },
-    toggleCoords0 : function() {
-      toggleCoords();
-    },
-    toggleArms0 : function() {
-      toggleArms();
-    },
-    toggleAxes0 : function() {
-      toggleAxes();
-    },
-    reset0 : function(newValue) {
-      this.anglesOneLiner = newValue;
-      setAngles(this.anglesOneLiner);
-      getForward();
-      refreshGitter();
-      refreshCoords();
-      refreshArms();
-      refreshAxes();
-    },
-    recalc : function() {
-      this.reset0(this.anglesOneLiner);
-    },
-    freeze0 : function() {
-      freeze();
-      if(store.updateFast) {
-        this.freezeText = "freeze";
-      }
-      else {
-        this.freezeText = "unfreeze";
-      }
-    }
+  components: {
+    LoadSaveForm,
+    DesignForm,
   },
   watch: {
       anglesOneLiner(newValue) {
-        this.reset0(newValue);
+        setAngles(newValue);
+        showAll();
       },
-      ARP(newValue) {
-        set_A_Value(-2, newValue);
+      selectTemplate(newValue) {
+        this.dhstring = readTemplate(newValue);
+        setDHParameters(this.dhstring);
+        this.anglesOneLiner = initAnglesOneLiner();
+	showAll();
       },
-      A0(newValue) {
-        set_A_Value(0, newValue);
-      },
-      A1(newValue) {
-        set_A_Value(1, newValue);
-      },
-      A2(newValue) {
-        set_A_Value(2, newValue);
-      },
-      A3(newValue) {
-        set_A_Value(3, newValue);
-      },
-      A4(newValue) {
-        set_A_Value(4, newValue);
-      },
-      A5(newValue) {
-        set_A_Value(5, newValue);
-      },
-      A6(newValue) {
-        set_A_Value(6, newValue);
-      },
-      Tool(newValue) {
-        set_A_Value(-1, newValue);
+      selectAnimate(newValue) {
+        if(newValue == "no animation") {
+          var scene = scenes[0];
+          setAnimationMode("no animation");
+          scene.unregisterBeforeRender(animateRobot);
+        }
+        else if(newValue.startsWith("axis")) {
+          setAnimationMode(newValue);
+        }
+        else if(newValue.startsWith("points")) {
+          setAnimationMode(newValue);
+        }
+        else if(newValue == "clear points") {
+          clearAnimationPoints();
+        }
+        else if(newValue == "all axes") {
+          var scene = scenes[0];
+          setAnimationMode("all");
+          scene.registerBeforeRender(animateRobot);
+        }
       }
   },
   vuetify: new Vuetify({
   })
+
 };
 </script>
+
