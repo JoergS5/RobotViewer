@@ -1,9 +1,8 @@
-import { Engine, Scene, Vector3, ArcRotateCamera, Tools, SceneOptimizerOptions, 
-	SceneOptimizer } from "@babylonjs/core";
-import { scenes, initMaterials, robotparts, numOfAxes } from './RobotData';
+import { Engine, Scene, Vector3, ArcRotateCamera, Tools	} from "@babylonjs/core";
+import { scenes, initMaterials, robotparts } from './RobotData';
 import { showGitter } from './RobotGitter';
 import { showCoords } from './RobotCoords';
-import {showArms, moveArms } from './RobotArms';
+import {showArms } from './RobotArms';
 import { showAxes } from './RobotAxes';
 import { showRotaryPies } from './RobotRotaryPie';
 import { showPrismaticBars } from './RobotPrismaticBar';
@@ -56,13 +55,6 @@ export const initScene = (canvas0) => {
   camera.attachControl(canvas0, true);
 
   initMaterials();
-
-var options = new SceneOptimizerOptions(1, 100);
-//options.addOptimization(new HardwareScalingOptimization(0, 1));
-options.targetFrameRate = 100;
-//SceneOptimizer.OptimizeAsync(scene, options);
-options = SceneOptimizerOptions.LowDegradationAllowed();
-//options = SceneOptimizerOptions.ModerateDegradationAllowed(45);
 
 /*
 SceneOptimizer.OptimizeAsync(scene, options,

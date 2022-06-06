@@ -3,10 +3,10 @@ import { angle, dh, numOfAxes, scenes, coord, robotparts } from './RobotData';
 import { getForward } from './ForwardCalculate';
 import { moveArms } from './RobotArms';
 
-var animationMode = "no animation";
+//var animationMode = "no animation";
 var drawPoints = true;
 
-export const animateRobot = (mode) => {
+export const animateRobot = () => {
   getRandomAngles();
   getForward();
   
@@ -32,7 +32,7 @@ export const setAnimationMode = (newMode) => {
     }
   }
   else {
-    animationMode = newMode;
+//    animationMode = newMode;
   }
 
 

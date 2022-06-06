@@ -203,8 +203,8 @@ alert("allOn");
 	showAll();
       },
       selectAnimate(newValue) {
+        var scene = scenes[0];
         if(newValue == "no animation") {
-          var scene = scenes[0];
           setAnimationMode("no animation");
           scene.unregisterBeforeRender(animateRobot);
         }
@@ -218,7 +218,6 @@ alert("allOn");
           clearAnimationPoints();
         }
         else if(newValue == "all axes") {
-          var scene = scenes[0];
           setAnimationMode("all");
           scene.registerBeforeRender(animateRobot);
         }
