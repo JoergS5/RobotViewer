@@ -38,6 +38,15 @@ M669 A3:0:0:0:90:0:0:0:0:500
 G10 X:0 Y:0 Z:100
 `;
 
+case("Scara 2 arm RRP"):
+return `
+M669 K13 AT:PRR AL:ZXY
+M669 A0:0:0:0:0:0:0:0:0:0
+M669 A1:0:0:0:0:0:180:0:0:300
+M669 A2:0:0:0:0:200:0:0:-100:100
+M669 A3:0:0:0:0:150:0:0:-100:100
+G10 X:0 Y:0 Z:100
+`;
 
 
 
@@ -52,7 +61,7 @@ ok          'Robot 6 Axis RRRRRR',
 ok          'Cartesian 3 Axis PPP',
           'Cartesian with Spherical wrist PPPRRR',
 ok          'Open5x PPPRR',
-          'Scara 2 arm RRP',
+          'Scara 2 arm PRR',
           'Anthropomorphic RRR',
           'Stanford manipulator RRPRRR',
           '7 arm cobot RRRRRRR',

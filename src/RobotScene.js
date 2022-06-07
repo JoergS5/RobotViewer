@@ -25,6 +25,18 @@ export const showAll = () => {
 
 }
 
+export const allOff = () => {
+  robotparts.forEach(function(m) {
+    m.isVisible = false;
+  });
+}
+
+export const allOn = () => {
+  robotparts.forEach(function(m) {
+    m.isVisible = true;
+  });
+}
+
 const clearAll = () => {
   robotparts.forEach(function(m) {
     m.dispose();

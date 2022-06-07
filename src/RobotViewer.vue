@@ -16,13 +16,13 @@
 
 <v-col>
 <v-row>
-  <v-btn @click="allOff">Empty</v-btn>
+  <v-btn @click="allOff0">Empty</v-btn>
   <v-btn @click="toggleGitter0">Gitter</v-btn>
   <v-btn @click="toggleCoords0">Coords</v-btn>
   <v-btn @click="toggleAxes0">Axes</v-btn>
   <v-btn @click="togglePieBar0">Pie,Bar</v-btn>
   <v-btn @click="toggleArms0">Arms</v-btn>
-  <v-btn @click="allOn">All</v-btn>
+  <v-btn @click="allOn0">All</v-btn>
 </v-row>
 <v-row>
   <v-text-field v-model="anglesOneLiner" label="Angles" background-color="white"
@@ -39,15 +39,7 @@
                  auto-grow rows="5" cols="40" background-color="white" filled></v-textarea>
 </v-row>
 <v-row>
-  <v-btn @click.stop="showDesignForm=true">Design New
-             <DesignForm v-model="showDesignForm" /></v-btn>
   <v-btn @click.stop="recalc0">Set & Refresh</v-btn>
-</v-row>
-<v-row>
-  <v-btn @click.stop="showLoadSaveForm=true">load robot.g
-             <LoadSaveForm v-model="showLoadSaveForm" /></v-btn>
-  <v-btn @click.stop="showLoadSaveForm=true">save robot.g
-             <LoadSaveForm v-model="showLoadSaveForm" /></v-btn>
 </v-row>
 <v-row>
   <v-select  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
@@ -76,10 +68,8 @@ import Vue from 'vue';
 import Vuetify from 'vuetify';
 import 'vuetify/dist/vuetify.min.css';
 Vue.use(Vuetify)
-import LoadSaveForm from './LoadSaveForm.vue'
-import DesignForm from './DesignForm.vue'
 
-import { initScene, toggle, showAll } from "./RobotScene";
+import { initScene, toggle, showAll, allOff, allOn } from "./RobotScene";
 
 import { setAngles, initAnglesOneLiner, scenes } from './RobotData';
 import { setDHParameters } from './DHString2ArrConverter';
@@ -93,11 +83,21 @@ export default {
       setDHParameters(this.dhstring);
       showAll();
     },
-    allOff : function() {
-alert("allOff");
+    allOff0 : function() {
+      allOff();
+      this.visibleGitter = false;
+      this.visibleCoords = false;
+      this.visibleAxes = false;
+      this.visiblePieBar = false;
+      this.visibleArms = false;
     },
-    allOn : function() {
-alert("allOn");
+    allOn0 : function() {
+      allOn();
+      this.visibleGitter = true;
+      this.visibleCoords = true;
+      this.visibleAxes = true;
+      this.visiblePieBar = true;
+      this.visibleArms = true;
     },
     toggleGitter0 : function() {
       this.visibleGitter = !this.visibleGitter;
@@ -120,15 +120,6 @@ alert("allOn");
       this.visibleArms = !this.visibleArms;
       toggle("arm", this.visibleArms);
     },
-    freeze0 : function() {
-      this.freeze = !this.freeze;
-      if(this.freeze == true) {
-        this.freezeText = "unfreeze";
-      }
-      else {
-        this.freezeText = "freeze";
-      }
-    }
   },
   mounted() {
     const bjsCanvas = this.$refs.bjsCanvas;
@@ -145,9 +136,7 @@ alert("allOn");
       showDesignForm: false,
       drawer: false,
       anglesOneLiner: "",
-      heightWidthOneLiner: "300, 300",
-      freezeText: "freeze",
-      freeze: false,
+      heightWidthOneLiner: "800, 800",
 
       //
       visibleGitter:true,
@@ -160,25 +149,15 @@ alert("allOn");
       selectTemplate: "",
       itemsTemplate: [
           'Robot 6 Axis RRRRRR',
-          'Cartesian 3 Axis PPP',
-          'Cartesian with Spherical wrist PPPRRR',
-          'Open5x PPPRR',
           'Scara 2 arm RRP',
-          'Anthropomorphic RRR',
-          'Stanford manipulator RRPRRR',
-          '7 arm cobot RRRRRRR',
+          'Open5x PPPRR',
+          'Cartesian 3 Axis PPP',
           'empty',
         ],
       selectAnimate: ['no animation'],
       itemsAnimate: [
           'no animation',
           'all axes',
-          'axis 1',
-          'axis 2',
-          'axis 3',
-          'axis 4',
-          'axis 5',
-          'axis 6',
           'clear points',
           'points on',
           'points off'
@@ -187,11 +166,18 @@ alert("allOn");
       id: "app"
     }
   },
-  components: {
-    LoadSaveForm,
-    DesignForm,
-  },
   watch: {
+      heightWidthOneLiner(newValue) {
+        var arr = newValue.split(",");
+        if(arr.length == 2) {
+          var newHeight = parseFloat(arr[0]);
+          var newWidth = parseFloat(arr[1]);
+          if(newHeight > 50 && newWidth > 50) {
+            this.mainHeight = newHeight;
+            this.mainWidth = newWidth;
+          }
+        }
+      },
       anglesOneLiner(newValue) {
         setAngles(newValue);
         showAll();
@@ -209,6 +195,10 @@ alert("allOn");
           scene.unregisterBeforeRender(animateRobot);
         }
         else if(newValue.startsWith("axis")) {
+          this.visibleGitter = false;
+          this.visibleCoords = false;
+          this.visibleAxes = false;
+          this.visiblePieBar = false;
           setAnimationMode(newValue);
         }
         else if(newValue.startsWith("points")) {
@@ -218,6 +208,16 @@ alert("allOn");
           clearAnimationPoints();
         }
         else if(newValue == "all axes") {
+          this.visibleGitter = false;
+          this.visibleCoords = false;
+          this.visibleAxes = false;
+          this.visiblePieBar = false;
+          toggle("coords", this.visibleCoords);
+          toggle("axis", this.visibleAxes);
+          toggle("pie", this.visiblePieBar);
+          toggle("bar", this.visiblePieBar);
+
+
           setAnimationMode("all");
           scene.registerBeforeRender(animateRobot);
         }
